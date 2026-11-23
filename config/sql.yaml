@@ -1,0 +1,58 @@
+# SQL the application itself runs. The model's SQL is separate: it is written per question
+# and checked by the SQL guard; analysts' examples live in config/golden/*.yaml.
+# Loaded once at start. Code-owned: review changes like code (brand_filter is a security
+# control).
+
+# Saved Reports library, SQLite. Every statement is scoped to the owner.
+reports:
+  schema: |
+    CREATE TABLE IF NOT EXISTS reports (
+      id INTEGER PRIMARY KEY,
+      owner TEXT NOT NULL,
+      conversation_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      body TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS audit (
+      ts TEXT DEFAULT CURRENT_TIMESTAMP,
+      owner TEXT NOT NULL,
+      action TEXT NOT NULL,
+      ids TEXT NOT NULL
+    );
+  insert: >-
+    INSERT INTO reports (owner, conversation_id, title, body) VALUES (?, ?, ?, ?)
+  find: SELECT id, conversation_id, title, created_at FROM reports WHERE owner = ?
+  # instr = literal substring ("100%" is not a wildcard); lower() = case-insensitive
+  find_text: >-
+    AND (instr(lower(title), lower(?)) > 0 OR instr(lower(body), lower(?)) > 0)
+  find_conversation: AND conversation_id = ?
+  order: ORDER BY id
+  get: SELECT id, title, body, created_at FROM reports WHERE owner = ? AND id = ?
+  # {ids}: one "?" per id
+  delete: DELETE FROM reports WHERE owner = ? AND id IN ({ids})
+  audit_delete: INSERT INTO audit (owner, action, ids) VALUES (?, 'delete', ?)
+
+# BigQuery. For analysts the SQL guard replaces every table with this subquery, so only
+# rows tied to their brands exist for the query. {dataset}, {brands} (quoted literals).
+# ponytail: orders/users are kept whole when they touch an allowed product, so
+# order-level columns (num_of_item) still count other brands' items; production uses
+# BigQuery row-level security.
+brand_filter:
+  products: SELECT * FROM `{dataset}.products` WHERE brand IN ({brands})
+  order_items: >-
+    SELECT * FROM `{dataset}.order_items`
+    WHERE product_id IN (SELECT id FROM `{dataset}.products` WHERE brand IN ({brands}))
+  orders: >-
+    SELECT * FROM `{dataset}.orders` WHERE order_id IN (
+      SELECT order_id FROM `{dataset}.order_items`
+      WHERE product_id IN (SELECT id FROM `{dataset}.products` WHERE brand IN ({brands})))
+  users: >-
+    SELECT * FROM `{dataset}.users` WHERE id IN (
+      SELECT user_id FROM `{dataset}.order_items`
+      WHERE product_id IN (SELECT id FROM `{dataset}.products` WHERE brand IN ({brands})))
+
+# DuckDB (DATA_BACKEND=local): table schema for the prompt.
+local_schema: >-
+  SELECT table_name, column_name, data_type FROM information_schema.columns
+  ORDER BY table_name

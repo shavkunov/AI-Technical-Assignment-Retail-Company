@@ -1,0 +1,37 @@
+# Install once: uv run pre-commit install   |   Run on everything: uv run pre-commit run --all-files
+# Python hooks run through `uv run`, so they use the project's pinned ruff / pytest.
+exclude: ^src/retail_agent/bq_client\.py$  # provided by OpsFleet, kept verbatim
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: check-added-large-files
+        args: [--maxkb=500]  # file size limit
+
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check (lint, 88-column lines)
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+      - id: pytest
+        name: pytest (offline; also <=500 lines per file, no SQL in Python)
+        entry: uv run pytest -q
+        language: system
+        pass_filenames: false
+        types_or: [python, yaml]

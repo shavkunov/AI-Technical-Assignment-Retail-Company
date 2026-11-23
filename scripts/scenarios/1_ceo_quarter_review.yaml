@@ -1,0 +1,45 @@
+# One long conversation, the way an executive would use the agent: explore the data,
+# drill into the assignment's own questions, write and save a report, then clean up.
+title: CEO quarterly review
+user: ceo  # from config/users.yaml (admin: all brands)
+description: >-
+  A single conversation of follow-up questions. Later turns build on earlier answers
+  ("this conversation" in the delete means everything saved here).
+turns:
+  - shows: Database structure
+    say: What data do we have and what can I analyze with it?
+
+  - shows: Time-based metric + golden trio reuse
+    say: What is our monthly revenue trend for 2024?
+
+  - shows: Customer behavior + PII pseudonyms
+    say: Who are our top 5 customers by total spend?
+
+  - shows: "Product performance: compare and explain why"
+    say: >-
+      Compare Calvin Klein and Levi's: revenue, margin and return rate.
+      Why do they perform differently?
+
+  - shows: "Assignment example: state comparison (multi-step)"
+    say: >-
+      Why are the users from California underspending? And how does it compare to
+      users in Texas?
+
+  - shows: "Assignment example: churn spike"
+    say: Why did our churn rate spike last month?
+
+  - shows: "Assignment example: Q1 report with action items, saved"
+    say: >-
+      Create a report for Q1 2024 including insights and action items for Q2, and
+      save it
+
+  - shows: User preference (learning loop)
+    say: From now on I prefer answers as bullet points
+
+  - shows: "Delete: user cancels"
+    say: Delete all the reports we made in this conversation
+    confirm: no  # how the user answers the confirmation prompt
+
+  - shows: "Delete: user confirms"
+    say: Delete all the reports we made in this conversation
+    confirm: yes

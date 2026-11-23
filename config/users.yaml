@@ -1,0 +1,11 @@
+# Who can see what. Edited by admins; read when the CLI starts (production: identity from SSO,
+# entitlements in Postgres). role: admin sees all products; brand_exec (an executive responsible
+# for some brands) sees only rows tied to their brands; a brand_exec with no brands sees no rows.
+ceo:
+  role: admin
+alice:
+  role: brand_exec
+  brands: [Calvin Klein, Levi's]
+bob:
+  role: brand_exec
+  brands: [Columbia, Carhartt]

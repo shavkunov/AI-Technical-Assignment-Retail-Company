@@ -1,0 +1,57 @@
+[project]
+name = "retail-agent"
+version = "0.1.0"
+description = "Data analysis chat agent over BigQuery thelook_ecommerce (OpsFleet assignment)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain>=1.0",
+    "langgraph>=1.0",
+    "langchain-google-genai>=3.0",
+    "google-cloud-bigquery>=3.25",
+    "db-dtypes>=1.3",
+    "pandas>=2.2",
+    "sqlglot>=26",
+    "duckdb>=1.1",
+    "python-dotenv>=1.0",
+    "rich>=13",
+    "pyyaml>=6",
+    "langfuse>=3",
+]
+
+[project.optional-dependencies]
+ollama = ["langchain-ollama>=1.0"]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.7.0",
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+retail-agent = "retail_agent.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/retail_agent"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["live: needs real Gemini key and/or BigQuery (deselect with -m 'not live')"]
+addopts = "-m 'not live'"
+
+[tool.ruff]
+line-length = 88  # Black / Ruff default (PEP 8 itself says 79)
+extend-exclude = ["src/retail_agent/bq_client.py"]  # provided by OpsFleet, kept verbatim
+
+[tool.ruff.lint]
+# BLE001: catch-alls are deliberate at the turn / tool boundary (the UI must never crash).
+ignore = ["BLE001"]
+extend-select = ["E501"]  # line length (88) is enforced, not just formatted
+
+[tool.ruff.lint.isort]
+known-first-party = ["retail_agent", "conftest", "test_golden"]

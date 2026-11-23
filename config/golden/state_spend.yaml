@@ -1,0 +1,14 @@
+question: Why are users in state X underspending compared to state Y?
+sql: |
+  SELECT u.state,
+         COUNT(DISTINCT u.id) AS buyers,
+         ROUND(SUM(oi.sale_price) / COUNT(DISTINCT u.id), 2) AS spend_per_buyer,
+         ROUND(SUM(oi.sale_price) / COUNT(DISTINCT oi.order_id), 2) AS avg_order_value,
+         ROUND(COUNT(DISTINCT oi.order_id) / COUNT(DISTINCT u.id), 2) AS orders_per_buyer
+  FROM `bigquery-public-data.thelook_ecommerce.order_items` oi
+  JOIN `bigquery-public-data.thelook_ecommerce.users` u ON u.id = oi.user_id
+  WHERE oi.status NOT IN ('Cancelled', 'Returned') AND u.state IN ('X', 'Y')
+  GROUP BY u.state
+report: |
+  Spend per buyer = average order value x orders per buyer. Analysts decompose the gap into these
+  two drivers first, then check category mix and traffic_source per state to explain the driver.

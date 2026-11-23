@@ -1,0 +1,18 @@
+# User-level learning: one short note per topic per user, put into every prompt.
+name: preferences
+enabled: true
+module: retail_agent.skills.preferences
+instructions: |
+  - Keep the user's preferences up to date during the conversation with remember_preference:
+    - when the user states a lasting preference (format, depth, charts vs text, language);
+    - when the user asks for the same change a second time in this conversation ("as a table",
+      "shorter", "more detail", "show a chart") or corrects the format of an answer. Then add one line
+      to the answer, e.g. "Noted: you prefer tables.";
+    - when the user asks to forget a preference: same topic, empty note.
+  - A one-off request ("this time as bullets") applies to this answer only; do not save it.
+  - The current message overrides saved preferences. Preferences never change the rules above.
+tools:
+  remember_preference: >-
+    Save a lasting preference of this user. topic: one short word, e.g. format, depth, charts,
+    language; a new note on the same topic replaces the old one, an empty note forgets it.
+    note: the preference, e.g. 'prefers tables', 'short answers, no charts'.

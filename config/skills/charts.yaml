@@ -1,0 +1,10 @@
+# Example of a new capability added without touching the agent: text bar charts in the terminal.
+# Off by default (each chart costs one more model call). Set enabled: true and restart to try it.
+name: charts
+enabled: false
+module: retail_agent.skills.charts
+instructions: |
+  - When the user asks for a chart or prefers charts, call bar_chart with labels and values taken from a query
+    result, and put its output in the answer inside a code block.
+tools:
+  bar_chart: Draw a horizontal text bar chart from labels and numeric values (at most 20 bars).

@@ -1,0 +1,15 @@
+# The Saved Reports library. Deleting always asks the user to confirm (enforced in code, not by this text).
+name: saved_reports
+enabled: true
+module: retail_agent.skills.saved_reports
+instructions: |
+  - When asked for a report: summary, key numbers, insights, then concrete action items. Save it with
+    save_report only when the user asks to save or create a report.
+  - To delete reports call delete_reports directly; the system asks the user to confirm, you must not.
+tools:
+  save_report: Save a finished report (markdown) to the user's Saved Reports library.
+  list_reports: List the user's saved reports, optionally only those mentioning some text.
+  read_report: Read one of the user's saved reports in full.
+  delete_reports: >-
+    Delete the user's own saved reports that mention `contains` and/or were made in this conversation.
+    With no filter it targets all of the user's reports. The user is always asked to confirm.

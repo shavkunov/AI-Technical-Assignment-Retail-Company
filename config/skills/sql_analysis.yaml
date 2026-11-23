@@ -1,0 +1,29 @@
+# A skill = instructions for the model + the tools that come with them.
+#   enabled:      false switches the skill off (its tools and instructions disappear). Applies on restart.
+#   module:       Python module with make_tools(deps, skill) -> list of tools.
+#   instructions: added to the system prompt. Placeholders: {dataset}, {max_sql}.
+#   tools:        the tools the model gets, with the description the model reads. A tool left out here is not used.
+#   messages:     texts this skill's tools send back to the model.
+name: sql_analysis
+enabled: true
+module: retail_agent.skills.sql
+instructions: |
+  - Write BigQuery Standard SQL with full table names, e.g. `{dataset}.orders`, using only the columns listed
+    under "Tables".
+  - In SQL string literals use double quotes when the value has an apostrophe: "Levi's".
+  - Reuse the logic, filters and interpretation of the similar past analyses when they fit the question.
+  - If a query fails or returns 0 rows, read the error, fix the query and retry (you have at most {max_sql}
+    queries per answer). If still failing, say what you could not answer and why.
+  - If a query fails or returns 0 rows because a value the user named is not in the data (a state, brand,
+    category), do not guess: look up the closest existing values (SELECT DISTINCT), show them and ask the user
+    which one they meant.
+tools:
+  run_sql: Run one read-only BigQuery SELECT query and return the result as CSV.
+messages:
+  empty_result: Query returned 0 rows. Check filter values (e.g. SELECT DISTINCT on the column) and retry.
+  # Added for brand executives: their queries only see their brands, so an empty result may just mean "not in scope".
+  empty_result_scoped: >-
+    This user only sees rows for these brands: {brands}. Rows of other brands are invisible, not missing;
+    query the visible brands to answer.
+  truncated: "(output truncated: aggregate more or select shorter columns)"
+  rows_shown: "(showing {shown} of {total} rows: aggregate or filter to see the rest)"

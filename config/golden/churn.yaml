@@ -1,0 +1,16 @@
+question: Why did our churn rate spike last month?
+sql: |
+  WITH last_order AS (
+    SELECT user_id, MAX(DATE(created_at)) AS last_day
+    FROM `bigquery-public-data.thelook_ecommerce.orders`
+    WHERE status NOT IN ('Cancelled')
+    GROUP BY user_id)
+  SELECT FORMAT_DATE('%Y-%m', DATE_ADD(last_day, INTERVAL 90 DAY)) AS churn_month,
+         COUNT(*) AS churned_users
+  FROM last_order
+  WHERE DATE_ADD(last_day, INTERVAL 90 DAY) <= CURRENT_DATE()
+  GROUP BY churn_month ORDER BY churn_month
+report: |
+  There is no subscription, so churn = no order for 90 days after the last one.
+  A spike is explained by cohort: which acquisition month and traffic_source the churned users came from,
+  and whether their last order was returned.

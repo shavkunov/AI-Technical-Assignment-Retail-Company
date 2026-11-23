@@ -1,0 +1,11 @@
+# The primary model is replaced by one that does not exist, so every model call fails
+# and must be answered by the fallback without the user noticing.
+title: Primary model down
+user: ceo
+primary_model: google_genai:gemini-no-such-model  # the normal model becomes the fallback
+description: >-
+  Gemini returns 404 for the primary model; the agent moves to the fallback model on
+  every call.
+turns:
+  - shows: "Resilience: primary model down"
+    say: How many orders were placed in 2024?
